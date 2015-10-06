@@ -15,6 +15,7 @@ Public Class mainForm
 
         'Fill all datagridviews and dropdown lists
         Call loadDefaultData()
+
         My.Settings.materialName = ""
 
     End Sub
@@ -70,6 +71,7 @@ Public Class mainForm
         'Add instructions to the dropdown list and set as default selection
         materialSDSLookupComboBox.Items.Insert(0, "Enter Material")
         materialSDSLookupComboBox.SelectedIndex = 0
+        materialSDSLookupComboBox.DroppedDown = True
 
         SDSLogComboBox.Items.Insert(0, "Enter Material")
         SDSLogComboBox.SelectedIndex = 0
@@ -326,6 +328,7 @@ Public Class mainForm
         vendor1EDSDSLookupDateTimePicker.Value = Date.Today
         vendor2TextBox.Text = ""
         vendor2EDSDSLookupDateTimePicker.Value = Date.Today
+        materialSDSLookupComboBox.DroppedDown = True
 
     End Sub
 

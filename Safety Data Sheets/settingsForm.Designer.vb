@@ -81,6 +81,7 @@ Partial Class settingsForm
         Me.Controls.Add(Me.DBLocationSettingsLabel)
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
         Me.Name = "settingsForm"
+        Me.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent
         Me.Text = "Settings"
         Me.ResumeLayout(False)
         Me.PerformLayout()
