@@ -111,10 +111,10 @@
     <Compile Include="settingsForm.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="vendorForm.Designer.vb">
-      <DependentUpon>vendorForm.vb</DependentUpon>
+    <Compile Include="hazardsForm.Designer.vb">
+      <DependentUpon>hazardsForm.vb</DependentUpon>
     </Compile>
-    <Compile Include="vendorForm.vb">
+    <Compile Include="hazardsForm.vb">
       <SubType>Form</SubType>
     </Compile>
   </ItemGroup>
@@ -131,8 +131,8 @@
     <EmbeddedResource Include="settingsForm.resx">
       <DependentUpon>settingsForm.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="vendorForm.resx">
-      <DependentUpon>vendorForm.vb</DependentUpon>
+    <EmbeddedResource Include="hazardsForm.resx">
+      <DependentUpon>hazardsForm.vb</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

@@ -596,6 +596,10 @@ Public Class mainForm
 
     Dim filePrefix, fileName As String
 
+    Private Sub selectHazardsButton_Click(sender As Object, e As EventArgs) Handles selectHazardsButton.Click
+        hazardsForm.ShowDialog()
+    End Sub
+
     Private Sub sendEmail()
 
         Dim OutlookMessage As Outlook.MailItem
