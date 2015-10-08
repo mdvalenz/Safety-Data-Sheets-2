@@ -8,6 +8,10 @@ Public Class mainForm
     Dim newMaterial As Boolean = Nothing
 
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        Call loadForm()
+    End Sub
+
+    Private Sub loadForm()
         'TODO: This line of code loads data into the 'SDS_LogDataSet1.SDS_Log' table. You can move, or remove it, as needed.
         Me.SDS_LogTableAdapter.Fill(Me.SDS_LogDataSet1.SDS_Log)
         'TODO: This line of code loads data into the 'SDS_LogDataSet.SDS_List' table. You can move, or remove it, as needed.
@@ -18,6 +22,10 @@ Public Class mainForm
 
         My.Settings.materialName = ""
 
+        materialSDSLookupComboBox.Text = "Enter material"
+        SDSLogComboBox.Text = "Enter material"
+        materialSDSLookupComboBox.Focus()
+
     End Sub
 
     Private Sub loadDefaultData()
@@ -25,8 +33,12 @@ Public Class mainForm
         'Fill DataGridViews with the SDS List and SDS Log
         Call loadSDSLog()
 
+        'Set dates
+        vendor1EDSDSLookupDateTimePicker.Value = Date.Today
+        vendor2EDSDSLookupDateTimePicker.Value = Date.Today
+
         'Fill the Material List dropdown from the database
-        Call loadMaterials()
+        'Call loadMaterials()
 
     End Sub
 
@@ -34,55 +46,55 @@ Public Class mainForm
         settingsForm.Show()
     End Sub
 
-    Private Sub loadMaterials()
+    'Private Sub loadMaterials()
 
-        'Connect to the task database
-        Dim con As New OleDb.OleDbConnection
-        Dim dbProvider As String
-        Dim dbSource As String
-        Dim ds As New DataSet
-        Dim Sql As String
+    '    'Connect to the task database
+    '    Dim con As New OleDb.OleDbConnection
+    '    Dim dbProvider As String
+    '    Dim dbSource As String
+    '    Dim ds As New DataSet
+    '    Dim Sql As String
 
-        'Provider to access the database and where the database is located
-        dbProvider = "PROVIDER=Microsoft.ACE.OLEDB.12.0;"
-        dbSource = "Data Source = " & My.Settings.SDSDBLocation
+    '    'Provider to access the database and where the database is located
+    '    dbProvider = "PROVIDER=Microsoft.ACE.OLEDB.12.0;"
+    '    dbSource = "Data Source = " & My.Settings.SDSDBLocation
 
-        con.ConnectionString = dbProvider & dbSource
+    '    con.ConnectionString = dbProvider & dbSource
 
-        'Opening the database connection
-        con.Open()
+    '    'Opening the database connection
+    '    con.Open()
 
-        'Search string to select all tags from the tagTable
-        Sql = "SELECT ID, Material FROM SDS_List ORDER by Material"
-        Dim cm As New OleDb.OleDbCommand(Sql, con)
+    '    'Search string to select all tags from the tagTable
+    '    Sql = "SELECT ID, Material FROM SDS_List ORDER by Material"
+    '    Dim cm As New OleDb.OleDbCommand(Sql, con)
 
-        'Send the search to the data reader
-        Dim dr As OleDb.OleDbDataReader = cm.ExecuteReader
+    '    'Send the search to the data reader
+    '    Dim dr As OleDb.OleDbDataReader = cm.ExecuteReader
 
-        'Get the database into the dropdown list
-        materialSDSLookupComboBox.Items.Clear()
-        SDSLogComboBox.Items.Clear()
+    '    'Get the database into the dropdown list
+    '    materialSDSLookupComboBox.Items.Clear()
+    '    SDSLogComboBox.Items.Clear()
 
-        While dr.Read
-            materialSDSLookupComboBox.Items.Add(dr("Material"))
-            SDSLogComboBox.Items.Add(dr("Material"))
-        End While
+    '    While dr.Read
+    '        materialSDSLookupComboBox.Items.Add(dr("Material"))
+    '        SDSLogComboBox.Items.Add(dr("Material"))
+    '    End While
 
-        'Add instructions to the dropdown list and set as default selection
-        materialSDSLookupComboBox.Items.Insert(0, "Enter Material")
-        materialSDSLookupComboBox.SelectedIndex = 0
-        materialSDSLookupComboBox.DroppedDown = True
+    '    'Add instructions to the dropdown list and set as default selection
+    '    materialSDSLookupComboBox.Items.Insert(0, "Enter Material")
+    '    materialSDSLookupComboBox.SelectedIndex = 0
+    '    materialSDSLookupComboBox.DroppedDown = True
 
-        SDSLogComboBox.Items.Insert(0, "Enter Material")
-        SDSLogComboBox.SelectedIndex = 0
+    '    SDSLogComboBox.Items.Insert(0, "Enter Material")
+    '    SDSLogComboBox.SelectedIndex = 0
 
-        'Closing the database connection
-        dr.Close()
-        con.Close()
+    '    'Closing the database connection
+    '    dr.Close()
+    '    con.Close()
 
-        'MsgBox("Database is now Closed")
+    '    'MsgBox("Database is now Closed")
 
-    End Sub
+    'End Sub
 
     Private Sub loadSDSLog()
 
@@ -220,6 +232,7 @@ Public Class mainForm
     End Sub
 
     Private Sub getInfoSDSLogButton_Click(sender As Object, e As EventArgs) Handles getInfoSDSLogButton.Click
+        My.Settings.materialName = SDSLogComboBox.Text
         Call getMaterial()
         mainTabControl.SelectTab(0)
     End Sub
@@ -321,23 +334,28 @@ Public Class mainForm
 
     Private Sub clearForm()
 
-        materialSDSLookupComboBox.SelectedIndex = 0
         CASNumberSDSLookupTextBox.Text = ""
         hazardsSDSLookupTextBox.Text = ""
         vendor1TextBox.Text = ""
         vendor1EDSDSLookupDateTimePicker.Value = Date.Today
         vendor2TextBox.Text = ""
         vendor2EDSDSLookupDateTimePicker.Value = Date.Today
-        materialSDSLookupComboBox.DroppedDown = True
+
+        materialSDSLookupComboBox.Text = "Enter material"
+        SDSLogComboBox.Text = "Enter material"
+        materialSDSLookupComboBox.Focus()
+        'materialSDSLookupComboBox.DroppedDown = True
 
     End Sub
 
     Private Sub clearSDSLookupButton_Click(sender As Object, e As EventArgs) Handles clearSDSLookupButton.Click
         Call clearForm()
+        Call hazardsForm.clearAllChecks()
     End Sub
 
     Private Sub resetSDSLookupButton_Click(sender As Object, e As EventArgs) Handles resetSDSLookupButton.Click
         Call getMaterialInformation()
+        Call hazardsForm.clearAllChecks()
     End Sub
 
     Private Sub saveSDSLookupButton_Click(sender As Object, e As EventArgs) Handles saveSDSLookupButton.Click
@@ -350,9 +368,17 @@ Public Class mainForm
         End If
 
         Call addlog()
-        Call loadMaterials()
+        'Call loadMaterials()
         Call loadSDSLog()
+        Call hazardsForm.clearAllChecks()
+        Call refreshMaterials()
 
+    End Sub
+
+    Private Sub refreshMaterials()
+        Me.Controls.Clear() 'removes all the controls on the form
+        InitializeComponent() 'load all the controls again
+        loadForm() 'loads from load items
     End Sub
 
     Private Sub editMaterial()
@@ -578,19 +604,23 @@ Public Class mainForm
         '---------------change default printer or printer select box----------------------
 
         objAccApp.Visible = True
-        objAccApp.DoCmd.OpenReport(strAccReport, Microsoft.Office.Interop.Access.AcView.acViewPreview, Type.Missing, Type.Missing, AcWindowMode.acWindowNormal, Type.Missing) 'Open Selected Report
-        'objAccApp.DoCmd.PrintOut(AcPrintRange.acPrintAll, Type.Missing, Type.Missing, AcPrintQuality.acHigh, Type.Missing, Type.Missing) 'Print Report
 
-        'MsgBox("Click OK after Export", MsgBoxStyle.OkOnly, "Export SDS Log")
+        Try
+            objAccApp.DoCmd.OpenReport(strAccReport, Microsoft.Office.Interop.Access.AcView.acViewPreview, Type.Missing, Type.Missing, AcWindowMode.acWindowNormal, Type.Missing) 'Open Selected Report
+            'objAccApp.DoCmd.PrintOut(AcPrintRange.acPrintAll, Type.Missing, Type.Missing, AcPrintQuality.acHigh, Type.Missing, Type.Missing) 'Print Report
 
-        'objAccApp.CloseCurrentDatabase() 'Close Database
-        'objAccApp.Quit()
-        objAccApp = Nothing 'Release Resources
+            'MsgBox("Click OK after Export", MsgBoxStyle.OkOnly, "Export SDS Log")
 
-        Call sendEmail()
+            'objAccApp.CloseCurrentDatabase() 'Close Database
+            'objAccApp.Quit()
+            objAccApp = Nothing 'Release Resources
 
-        'Open Windows Explorer to SDS folder for adding attachment to Email
-        Process.Start("F:\QA\SAFETY\MSDS\")
+            Call sendEmail()
+
+            'Open Windows Explorer to SDS folder for adding attachment to Email
+            Process.Start("F:\QA\SAFETY\MSDS\")
+        Catch
+        End Try
 
     End Sub
 
