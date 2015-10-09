@@ -11,6 +11,7 @@ Public Class mainForm
     Dim newVendor2 As Boolean = Nothing
 
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
+        'Created by Mario Valenzuela
         Call loadForm()
     End Sub
 
