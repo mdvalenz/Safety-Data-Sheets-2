@@ -5,6 +5,7 @@ Public Class mainForm
 
     'Dim materialID As Integer = Nothing
     Dim materialName As String = Nothing
+    Dim materialID As String = Nothing
     Dim newMaterial As Boolean = Nothing
 
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
@@ -248,6 +249,10 @@ Public Class mainForm
         End If
     End Sub
 
+    'Private Sub materialSDSLookupComboBox_leave(sender As System.Object, e As System.Windows.Forms.KeyEventArgs) Handles materialSDSLookupComboBox.Leave
+    '    Call getMaterialInformation()
+    'End Sub
+
     Private Sub getMaterialInformation()
 
         'Check if anything was entered
@@ -332,6 +337,61 @@ Public Class mainForm
 
     End Sub
 
+    Private Sub checkMaterial()
+
+        'Check if anything was entered
+        If materialSDSLookupComboBox.Text = "Enter Material" Then
+            MsgBox("Please enter a material", MsgBoxStyle.Exclamation, "Enter Material")
+            Exit Sub
+        End If
+
+        'Get Material Name
+        materialName = materialSDSLookupComboBox.Text
+
+        'Search for material in SDS list
+        'Connect to the task database
+        Dim con As New OleDb.OleDbConnection
+        Dim dbProvider As String
+        Dim dbSource As String
+        Dim ds As New DataSet
+        Dim Sql As String
+
+        'Provider to access the database and where the database is located
+        dbProvider = "PROVIDER=Microsoft.ACE.OLEDB.12.0;"
+        dbSource = "Data Source = " & My.Settings.SDSDBLocation
+
+        con.ConnectionString = dbProvider & dbSource
+
+        'Opening the database connection
+        con.Open()
+
+        'Search string to select all tags from the tagTable
+        Sql = "SELECT ID, Material FROM SDS_List WHERE Material=@materialName"
+
+        Dim cm As New OleDb.OleDbCommand(Sql, con)
+        cm.Parameters.AddWithValue("@materialName", materialName)
+
+        'Send the search to the data reader
+        Dim dr As OleDb.OleDbDataReader = cm.ExecuteReader
+
+        Try
+            If dr.Read() Then
+                newMaterial = False
+                My.Settings.materialID = dr.Item(0).ToString
+            Else
+                newMaterial = True
+            End If
+
+        Finally
+
+            'Closing the database connection
+            dr.Close()
+            con.Close()
+
+        End Try
+
+    End Sub
+
     Private Sub clearForm()
 
         CASNumberSDSLookupTextBox.Text = ""
@@ -360,6 +420,8 @@ Public Class mainForm
 
     Private Sub saveSDSLookupButton_Click(sender As Object, e As EventArgs) Handles saveSDSLookupButton.Click
 
+        Call checkMaterial()
+
         If newMaterial = False Then
             My.Settings.materialName = materialSDSLookupComboBox.Text
             Call editMaterial()
@@ -376,7 +438,11 @@ Public Class mainForm
     End Sub
 
     Private Sub refreshMaterials()
-        Me.Controls.Clear() 'removes all the controls on the form
+        Try
+            Me.Controls.Clear() 'removes all the controls on the form
+        Catch
+        End Try
+
         InitializeComponent() 'load all the controls again
         loadForm() 'loads from load items
     End Sub
@@ -391,6 +457,8 @@ Public Class mainForm
 
         'Get Variables
         materialName = My.Settings.materialName
+        materialID = My.Settings.materialID
+
         Dim hazards As String = hazardsSDSLookupTextBox.Text
         Dim CASNumber As String = CASNumberSDSLookupTextBox.Text
         Dim vendor1 As String = vendor1TextBox.Text
@@ -398,13 +466,12 @@ Public Class mainForm
         Dim vendor2 As String = vendor2TextBox.Text
         Dim vendor2Date As Date = Format(vendor2EDSDSLookupDateTimePicker.Value, "M/d/yyyy")
 
-        'Connect to the task database
+        'Connect to the database
         Dim con As New OleDb.OleDbConnection
         Dim dbProvider As String
         Dim dbSource As String
         Dim ds As New DataSet
-        Dim da As OleDb.OleDbDataAdapter = New OleDb.OleDbDataAdapter
-        Dim dc As OleDb.OleDbCommand
+        Dim da As OleDb.OleDbDataAdapter
         Dim Sql As String
 
         'Provider to access the database and where the database is located
@@ -417,44 +484,61 @@ Public Class mainForm
         con.Open()
 
         Try
-            'Base SQL String
-            Sql = "UPDATE SDS_List SET Hazards=@hazards, CASNumber=@CASNumber, "
-
-            If vendor1 <> "" Then
-                Sql = Sql & "Vendor1=@vendor1, ED1=@vendor1Date, "
-            End If
-
-            If vendor2 <> "" Then
-                Sql = Sql & "Vendor2=@vendor2, ED2=@vendor2Date, "
-            End If
-
-            Sql = Sql & "WHERE Material='" & materialName & "'"
+            'Search string to select all columns from the table
+            Sql = "SELECT * FROM SDS_List WHERE ID=" & materialID
 
             'Send the search to the data adapter
-            dc = New OleDb.OleDbCommand(Sql, con)
+            da = New OleDb.OleDbDataAdapter(Sql, con)
 
-            'dc.Parameters.AddWithValue("@Material", materialName)
-            dc.Parameters.AddWithValue("@hazards", hazards)
-            dc.Parameters.AddWithValue("@CASNumber", CASNumber)
+            'Tell the data adapter to fill the dataset
+            da.Fill(ds, "SDS")
 
-            If vendor1 <> "" Then
-                dc.Parameters.AddWithValue("@vendor1", vendor1)
-                dc.Parameters.AddWithValue("@vendor1Date", vendor1Date)
+            'Edit row in the dataset
+            'Create a command builder 
+            Dim cb As New OleDb.OleDbCommandBuilder(da)
+
+            'MsgBox(ds.Tables(0).Rows(0).Item(0) & ", " & ds.Tables(0).Rows(0).Item(1))
+            'MsgBox(ds.Tables(0).Rows(0).Item(2) & ", " & ds.Tables(0).Rows(0).Item(3))
+
+            'Add the new tag to the new datarow in the dataset
+            ds.Tables(0).Rows(0).Item(2) = hazardsSDSLookupTextBox.Text
+            ds.Tables(0).Rows(0).Item(3) = CASNumberSDSLookupTextBox.Text
+
+            If vendor1TextBox.Text <> "" Then
+
+                'MsgBox(ds.Tables(0).Rows(0).Item(4) & ", " & ds.Tables(0).Rows(0).Item(5))
+
+                ds.Tables(0).Rows(0).Item(4) = vendor1TextBox.Text
+                ds.Tables(0).Rows(0).Item(5) = vendor1EDSDSLookupDateTimePicker.Value
+
+                'MsgBox(ds.Tables(0).Rows(0).Item(4) & ", " & ds.Tables(0).Rows(0).Item(5))
+
             End If
 
-            If vendor2 <> "" Then
-                dc.Parameters.AddWithValue("@vendor2", vendor2)
-                dc.Parameters.AddWithValue("@vendor2Date", vendor2Date)
+            If vendor2TextBox.Text <> "" Then
+
+                'MsgBox(ds.Tables(0).Rows(0).Item(6) & ", " & ds.Tables(0).Rows(0).Item(7))
+
+                ds.Tables(0).Rows(0).Item(6) = vendor2TextBox.Text
+                ds.Tables(0).Rows(0).Item(7) = vendor2EDSDSLookupDateTimePicker.Value
+
+                'MsgBox(ds.Tables(0).Rows(0).Item(6) & ", " & ds.Tables(0).Rows(0).Item(7))
+
             End If
 
-            dc.ExecuteNonQuery()
+            'Update the database using the data adapter
+            da.Update(ds, "SDS")
 
         Catch ex As Exception
-
+            MsgBox("An exception occurred:" & vbCrLf & ex.Message)
         End Try
+
+        'MsgBox("Database is now open")
 
         'Closing the database connection
         con.Close()
+
+        'MsgBox("Database is now Closed")
 
     End Sub
 
@@ -483,7 +567,7 @@ Public Class mainForm
         'Opening the database connection
         con.Open()
 
-        'Search string to select all Tags from the tagTable
+        'Search string to select all columns from the table
         Sql = "SELECT * FROM SDS_List"
 
         'Send the search to the data adapter

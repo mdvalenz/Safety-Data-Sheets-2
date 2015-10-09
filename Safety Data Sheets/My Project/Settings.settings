@@ -16,5 +16,8 @@
     <Setting Name="SDSDBLocation" Type="System.String" Scope="User">
       <Value Profile="(Default)">F:\QA\SAFETY\MSDS\SDS Log.accdb</Value>
     </Setting>
+    <Setting Name="materialID" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
   </Settings>
 </SettingsFile>
