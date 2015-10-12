@@ -1,4 +1,5 @@
-﻿Imports Microsoft.Office.Interop
+﻿Imports CrystalDecisions.Shared
+Imports Microsoft.Office.Interop
 Imports Microsoft.Office.Interop.Access
 
 Public Class mainForm
@@ -776,35 +777,112 @@ Public Class mainForm
 
     Private Sub ExportSDSLogToolStripMenuItem_Click(sender As Object, e As EventArgs) Handles ExportSDSLogToolStripMenuItem.Click
 
-        'Run Access Report to Export SDS Log data
-        Dim objAccApp As New Microsoft.Office.Interop.Access.Application() 'Instantiate Access Application Object
-        Dim strAccReport As String = "SDS_Log_Report" 'Get Selected ListBox Item
-        objAccApp.OpenCurrentDatabase("F:\QA\SAFETY\MSDS\SDS Log.accdb", False, "") 'Open Database
+        'Refresh database
 
-        If Not objAccApp.Visible = False Then 'Do Not Show Access Window(s)
-            objAccApp.Visible = False
-        End If
 
-        '---------------change default printer or printer select box----------------------
+        'Get start date
+        Dim todaysDate As Date = Date.Now
+        Dim startDate As Date = Format(todaysDate.AddDays(-todaysDate.Day + 1), "MM/dd/yyyy")
 
-        objAccApp.Visible = True
+        'Get save location
+        Dim saveLocation As String = Nothing
+        saveLocation = "F:\QA\SAFETY\MSDS\" & Year(Now)
+
+        'Get file name
+        Dim fileName As String = Nothing
+        fileName = "SDS Log " & Format(todaysDate, "yyyy-MM-dd") & ".pdf"
+
+        'Set filePath
+        Dim filePath As String = Nothing
+        filePath = saveLocation & "\" & fileName
+
+        startDate = InputBox("Enter Start Date", "Start Date", startDate)
+
+        'Create dataset
+        'Connect to the database
+        Dim con As New OleDb.OleDbConnection
+        Dim dbProvider As String
+        Dim dbSource As String
+        Dim ds As New DataSet
+        Dim dt As New DataTable
+        Dim bs As New BindingSource
+        Dim da As OleDb.OleDbDataAdapter
+        Dim Sql As String
+        Dim revisedSDS = New revisedSDSCrystalReport
+
+        'Provider to access the database and where the database is located
+        dbProvider = "PROVIDER=Microsoft.ACE.OLEDB.12.0;"
+        dbSource = "Data Source = " & My.Settings.SDSDBLocation
+        con.ConnectionString = dbProvider & dbSource
+
+        'Opening the database connection
+        con.Open()
 
         Try
-            objAccApp.DoCmd.OpenReport(strAccReport, Microsoft.Office.Interop.Access.AcView.acViewPreview, Type.Missing, Type.Missing, AcWindowMode.acWindowNormal, Type.Missing) 'Open Selected Report
-            'objAccApp.DoCmd.PrintOut(AcPrintRange.acPrintAll, Type.Missing, Type.Missing, AcPrintQuality.acHigh, Type.Missing, Type.Missing) 'Print Report
+            Sql = "Select DISTINCT SDS_Log.Material, SDS_List.HAZARDS, SDS_Log.DateLogged " &
+                "FROM SDS_List " &
+                "INNER JOIN SDS_Log " &
+                "On SDS_List.MATERIAL = SDS_Log.Material " &
+                "WHERE SDS_Log.DateLogged >=#" & startDate & "# " &
+                "ORDER BY SDS_Log.Material;"
 
-            'MsgBox("Click OK after Export", MsgBoxStyle.OkOnly, "Export SDS Log")
+            'Send the search to the data adapter
+            da = New OleDb.OleDbDataAdapter(Sql, con)
 
-            'objAccApp.CloseCurrentDatabase() 'Close Database
-            'objAccApp.Quit()
-            objAccApp = Nothing 'Release Resources
+            'Tell the data adapter to fill the dataset
+            da.Fill(ds, "revisedSDS")
 
-            Call sendEmail()
+            revisedSDS.SetDataSource(ds)
+            revisedSDS.VerifyDatabase()
 
-            'Open Windows Explorer to SDS folder for adding attachment to Email
-            Process.Start("F:\QA\SAFETY\MSDS\")
-        Catch
+            CrystalFormView.CrystalReportViewer1.ReportSource = revisedSDS
+            CrystalFormView.CrystalReportViewer1.RefreshReport()
+
+            'Show Crystal Report
+            'CrystalFormView.Show()
+
+            'Export Crystal Report
+            Try
+                Dim CrExportOptions As ExportOptions
+                Dim CrDiskFileDestinationOptions As New _
+                DiskFileDestinationOptions()
+                Dim CrFormatTypeOptions As New PdfRtfWordFormatOptions()
+                CrDiskFileDestinationOptions.DiskFileName =
+                                            filePath
+                CrExportOptions = revisedSDS.ExportOptions
+                With CrExportOptions
+                    .ExportDestinationType = ExportDestinationType.DiskFile
+                    .ExportFormatType = ExportFormatType.PortableDocFormat
+                    .DestinationOptions = CrDiskFileDestinationOptions
+                    .FormatOptions = CrFormatTypeOptions
+                End With
+                revisedSDS.Export()
+
+            Catch ex As Exception
+                MsgBox("An exception occurred:" & vbCrLf & ex.Message)
+
+            End Try
+
+        Catch ex As Exception
+            MsgBox("An exception occurred:" & vbCrLf & ex.Message)
+
         End Try
+
+        'MsgBox("Database Is now open")
+
+        'Closing the database connection
+        con.Close()
+
+        'MsgBox("Database Is now Closed")
+
+        'Send email
+        Call sendEmail(filePath)
+
+        'Open Windows Explorer to SDS folder for adding attachment to Email
+        'Process.Start(saveLocation)
+
+        'Catch
+        'End Try
 
     End Sub
 
@@ -814,7 +892,7 @@ Public Class mainForm
         hazardsForm.ShowDialog()
     End Sub
 
-    Private Sub sendEmail()
+    Private Sub sendEmail(filePath As String)
 
         Dim OutlookMessage As Outlook.MailItem
         Dim AppOutlook As New Outlook.Application
@@ -863,6 +941,7 @@ Public Class mainForm
             OutlookMessage.Subject = subject
             OutlookMessage.BodyFormat = Outlook.OlBodyFormat.olFormatHTML
             OutlookMessage.HTMLBody = "<html><body>" & MsgTxt & vsignature & "</body></html>"
+            OutlookMessage.Attachments.Add(filePath)
             'OutlookMessage.Save()
             OutlookMessage.Display()
             'OutlookMessage.Move(objFolder)

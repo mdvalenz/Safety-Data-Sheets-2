@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xs:schema id="DataSet1" targetNamespace="http://tempuri.org/DataSet1.xsd" xmlns:mstns="http://tempuri.org/DataSet1.xsd" xmlns="http://tempuri.org/DataSet1.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
+  <xs:annotation>
+    <xs:appinfo source="urn:schemas-microsoft-com:xml-msdatasource">
+      <DataSource DefaultConnectionIndex="0" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
+        <Connections />
+        <Tables />
+        <Sources />
+      </DataSource>
+    </xs:appinfo>
+  </xs:annotation>
+  <xs:element name="DataSet1" msdata:IsDataSet="true" msdata:UseCurrentLocale="true" msprop:EnableTableAdapterManager="true" msprop:Generator_DataSetName="DataSet1" msprop:Generator_UserDSName="DataSet1">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="revisedSDS" msprop:Generator_TableClassName="revisedSDSDataTable" msprop:Generator_TableVarName="tablerevisedSDS" msprop:Generator_TablePropName="revisedSDS" msprop:Generator_RowDeletingName="revisedSDSRowDeleting" msprop:Generator_RowChangingName="revisedSDSRowChanging" msprop:Generator_RowEvHandlerName="revisedSDSRowChangeEventHandler" msprop:Generator_RowDeletedName="revisedSDSRowDeleted" msprop:Generator_UserTableName="revisedSDS" msprop:Generator_RowChangedName="revisedSDSRowChanged" msprop:Generator_RowEvArgName="revisedSDSRowChangeEvent" msprop:Generator_RowClassName="revisedSDSRow">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Material" msprop:Generator_ColumnVarNameInTable="columnMaterial" msprop:Generator_ColumnPropNameInRow="Material" msprop:Generator_ColumnPropNameInTable="MaterialColumn" msprop:Generator_UserColumnName="Material" type="xs:string" minOccurs="0" />
+              <xs:element name="Hazards" msprop:Generator_ColumnVarNameInTable="columnHazards" msprop:Generator_ColumnPropNameInRow="Hazards" msprop:Generator_ColumnPropNameInTable="HazardsColumn" msprop:Generator_UserColumnName="Hazards" type="xs:string" minOccurs="0" />
+              <xs:element name="DateRevised" msprop:Generator_ColumnVarNameInTable="columnDateRevised" msprop:Generator_ColumnPropNameInRow="DateRevised" msprop:Generator_ColumnPropNameInTable="DateRevisedColumn" msprop:Generator_UserColumnName="DateRevised" type="xs:string" minOccurs="0" />
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
